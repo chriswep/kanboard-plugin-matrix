@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    // 'Help on Mattermost integration' => '',
+    // 'Help on Matrix integration' => '',
     // 'Channel/Group/User (Optional)' => '',
 );
 

@@ -1,23 +1,24 @@
 <?php
 
-namespace Kanboard\Plugin\Mattermost;
+namespace Kanboard\Plugin\Matrix;
 
 use Kanboard\Core\Translator;
 use Kanboard\Core\Plugin\Base;
 
 /**
- * Mattermost Plugin
+ * Matrix Plugin
  *
- * @package  mattermost
- * @author   Frederic Guillot
+ * @package  matrix
+ * @author   Frederic Guillot (original Mattermost plugin)
+ * @author   Chris Metz
  */
 class Plugin extends Base
 {
     public function initialize()
     {
-        $this->template->hook->attach('template:config:integrations', 'mattermost:config/integration');
-        $this->template->hook->attach('template:project:integrations', 'mattermost:project/integration');
-        $this->projectNotificationTypeModel->setType('mattermost', t('Mattermost'), '\Kanboard\Plugin\Mattermost\Notification\Mattermost');
+        $this->template->hook->attach('template:config:integrations', 'matrix:config/integration');
+        $this->template->hook->attach('template:project:integrations', 'matrix:project/integration');
+        $this->projectNotificationTypeModel->setType('matrix', t('Matrix'), '\Kanboard\Plugin\Matrix\Notification\Matrix');
     }
 
     public function onStartup()
@@ -27,22 +28,22 @@ class Plugin extends Base
 
     public function getPluginDescription()
     {
-        return 'Receive notifications on Mattermost';
+        return 'Receive notifications on Matrix';
     }
 
     public function getPluginAuthor()
     {
-        return 'Frédéric Guillot';
+        return 'Chris Metz';
     }
 
     public function getPluginVersion()
     {
-        return '1.0.4';
+        return '1.1.0';
     }
 
     public function getPluginHomepage()
     {
-        return 'https://github.com/kanboard/plugin-mattermost';
+        return 'https://github.com/chriswep/kanboard-plugin-matrix';
     }
 
     public function getCompatibleVersion()

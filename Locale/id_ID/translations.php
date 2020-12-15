@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    'Help on Mattermost integration' => 'Bantuan pada integrasi Mattermost',
+    'Help on Matrix integration' => 'Bantuan pada integrasi Matrix',
     'Channel/Group/User (Optional)' => 'Kanal/Grup/Pengguna (pilihan)',
 );
 

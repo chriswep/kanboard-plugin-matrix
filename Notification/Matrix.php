@@ -1,17 +1,17 @@
 <?php
 
-namespace Kanboard\Plugin\Mattermost\Notification;
+namespace Kanboard\Plugin\Matrix\Notification;
 
 use Kanboard\Core\Base;
 use Kanboard\Core\Notification\NotificationInterface;
 
 /**
- * Mattermost Notification
+ * Matrix Notification
  *
  * @package  notification
  * @author   Frederic Guillot
  */
-class Mattermost extends Base implements NotificationInterface
+class Matrix extends Base implements NotificationInterface
 {
     /**
      * Send notification to a user
@@ -35,8 +35,8 @@ class Mattermost extends Base implements NotificationInterface
      */
     public function notifyProject(array $project, $event_name, array $event_data)
     {
-        $webhook = $this->projectMetadataModel->get($project['id'], 'mattermost_webhook_url', $this->configModel->get('mattermost_webhook_url'));
-        $channel = $this->projectMetadataModel->get($project['id'], 'mattermost_webhook_channel');
+        $webhook = $this->projectMetadataModel->get($project['id'], 'matrix_webhook_url', $this->configModel->get('matrix_webhook_url'));
+        $channel = $this->projectMetadataModel->get($project['id'], 'matrix_webhook_channel');
 
         if (! empty($webhook)) {
             $this->sendMessage($webhook, $channel, $project, $event_name, $event_data);
@@ -56,31 +56,30 @@ class Mattermost extends Base implements NotificationInterface
     {
         if ($this->userSession->isLogged()) {
             $author = $this->helper->user->getFullname();
-            $title = $this->notificationModel->getTitleWithAuthor($author, $event_name, $event_data);
-        } else {
-            $title = $this->notificationModel->getTitleWithoutAuthor($event_name, $event_data);
+        } else if(!empty($event_data['user_id'])) {
+            $eventUser = $this->userModel->getById($event_data['user_id']);
+            $author = $this->helper->user->getFullname($eventUser);
         }
-
-        $message = '**['.$project['name']."]** ";
-        $message .= '_'.$event_data['task']['title']."_\n";
-        $message .= $title."\n";
-
-        if ($this->configModel->get('application_url') !== '') {
-            $message .= '['.t('View the task on Kanboard').']';
-            $message .= '(';
-            $message .= $this->helper->url->to('TaskViewController', 'show', array('task_id' => $event_data['task']['id'], 'project_id' => $project['id']), '', true);
-            $message .= ')';
-        }
+        if(!empty(@$author)) $title = $this->notificationModel->getTitleWithAuthor($author, $event_name, $event_data);
+        else $title = $this->notificationModel->getTitleWithoutAuthor($event_name, $event_data);
+        
+        $message = '<strong>['.$project['name']."]</strong> &ndash; ";
+        $message .= '<a href="'.$this->helper->url->to('TaskViewController', 'show', array('task_id' => $event_data['task']['id'], 'project_id' => $project['id']), '', true).'">';
+        $message .= '<strong>'.$event_data['task']['title']."</strong>";
+        $message .= '</a><br /><em>';
+        $message .= $title;
+        $message .= '</em>';
 
         return array(
             'text' => $message,
-            'username' => 'Kanboard',
-            'icon_url' => 'https://kanboard.net/assets/img/favicon.png',
+            'format' => 'html',
+            'displayName' => 'Kanboard',
+            // 'avatarUrl' => 'LINK_TO_PNG',
         );
     }
 
     /**
-     * Send message to Mattermost
+     * Send message to Matrix
      *
      * @access private
      * @param  string    $webhook
