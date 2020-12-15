@@ -36,10 +36,9 @@ class Matrix extends Base implements NotificationInterface
     public function notifyProject(array $project, $event_name, array $event_data)
     {
         $webhook = $this->projectMetadataModel->get($project['id'], 'matrix_webhook_url', $this->configModel->get('matrix_webhook_url'));
-        $channel = $this->projectMetadataModel->get($project['id'], 'matrix_webhook_channel');
 
         if (! empty($webhook)) {
-            $this->sendMessage($webhook, $channel, $project, $event_name, $event_data);
+            $this->sendMessage($webhook, $project, $event_name, $event_data);
         }
     }
 
@@ -58,6 +57,9 @@ class Matrix extends Base implements NotificationInterface
             $author = $this->helper->user->getFullname();
         } else if(!empty($event_data['user_id'])) {
             $eventUser = $this->userModel->getById($event_data['user_id']);
+            $author = $this->helper->user->getFullname($eventUser);
+        } else if($event_name === 'comment.create' && !empty($event_data['comment']['user_id'])) {
+            $eventUser = $this->userModel->getById($event_data['comment']['user_id']);
             $author = $this->helper->user->getFullname($eventUser);
         }
         if(!empty(@$author)) $title = $this->notificationModel->getTitleWithAuthor($author, $event_name, $event_data);
@@ -83,18 +85,13 @@ class Matrix extends Base implements NotificationInterface
      *
      * @access private
      * @param  string    $webhook
-     * @param  string    $channel
      * @param  array     $project
      * @param  string    $event_name
      * @param  array     $event_data
      */
-    private function sendMessage($webhook, $channel, array $project, $event_name, array $event_data)
+    private function sendMessage($webhook, array $project, $event_name, array $event_data)
     {
         $payload = $this->getMessage($project, $event_name, $event_data);
-
-        if (! empty($channel)) {
-            $payload['channel'] = $channel;
-        }
 
         $this->httpClient->postJsonAsync($webhook, $payload);
     }

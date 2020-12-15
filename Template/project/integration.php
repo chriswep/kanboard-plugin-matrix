@@ -3,9 +3,6 @@
     <?= $this->form->label(t('Webhook URL'), 'matrix_webhook_url') ?>
     <?= $this->form->text('matrix_webhook_url', $values) ?>
 
-    <?= $this->form->label(t('Channel/Group/User (Optional)'), 'matrix_webhook_channel') ?>
-    <?= $this->form->text('matrix_webhook_channel', $values, array(), array('placeholder="channel"')) ?>
-
     <p class="form-help"><a href="https://github.com/chriswep/kanboard-plugin-matrix" target="_blank"><?= t('Help on Matrix integration') ?></a></p>
 
     <div class="form-actions">
