@@ -56,8 +56,8 @@ class Matrix extends Base implements NotificationInterface
         if($event_name === 'comment.create' && !empty($event_data['comment']['user_id'])) {
             $eventUser = $this->userModel->getById($event_data['comment']['user_id']);
             $author = $this->helper->user->getFullname($eventUser);
-            $commentBody = preg_replace("/([\r\n]{6,}|[\n]{3,}|[\r]{3,})/", "\n\n", $event_data['comment']['comment']);
-            $body = '<em>'.$author. ' commented: </em>'.nl2br($commentBody);
+            $commentBody = str_replace(array("\r\n", "\n", "\r"), '<br>', $event_data['comment']['comment']);
+            $body = '<em>'.$author. ' commented: </em>'.$commentBody;
         } else {
             if ($this->userSession->isLogged()) {
                 $author = $this->helper->user->getFullname();
@@ -74,7 +74,7 @@ class Matrix extends Base implements NotificationInterface
         $message = '<strong>['.$project['name']."]</strong> &ndash; ";
         $message .= '<a href="'.$this->helper->url->to('TaskViewController', 'show', array('task_id' => $event_data['task']['id'], 'project_id' => $project['id']), '', true).'">';
         $message .= '<strong>'.$event_data['task']['title']."</strong>";
-        $message .= '</a><br />';
+        $message .= '</a><br>';
         $message .= $body;
 
         return array(
