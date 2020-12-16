@@ -53,24 +53,28 @@ class Matrix extends Base implements NotificationInterface
      */
     public function getMessage(array $project, $event_name, array $event_data)
     {
-        if ($this->userSession->isLogged()) {
-            $author = $this->helper->user->getFullname();
-        } else if(!empty($event_data['user_id'])) {
-            $eventUser = $this->userModel->getById($event_data['user_id']);
-            $author = $this->helper->user->getFullname($eventUser);
-        } else if($event_name === 'comment.create' && !empty($event_data['comment']['user_id'])) {
+        if($event_name === 'comment.create' && !empty($event_data['comment']['user_id'])) {
             $eventUser = $this->userModel->getById($event_data['comment']['user_id']);
             $author = $this->helper->user->getFullname($eventUser);
+            $body = '<em>'.$author. 'commented: </em>'.nl2br($event_data['comment']['comment']);
+        } else {
+            if ($this->userSession->isLogged()) {
+                $author = $this->helper->user->getFullname();
+            } else if(!empty($event_data['user_id'])) {
+                $eventUser = $this->userModel->getById($event_data['user_id']);
+                $author = $this->helper->user->getFullname($eventUser);
+            }
+            
+            if(!empty(@$author)) $body = $this->notificationModel->getTitleWithAuthor($author, $event_name, $event_data);
+            else $body = $this->notificationModel->getTitleWithoutAuthor($event_name, $event_data);
+            $body = '<em>'.$body.'</em>';
         }
-        if(!empty(@$author)) $title = $this->notificationModel->getTitleWithAuthor($author, $event_name, $event_data);
-        else $title = $this->notificationModel->getTitleWithoutAuthor($event_name, $event_data);
-        
+            
         $message = '<strong>['.$project['name']."]</strong> &ndash; ";
         $message .= '<a href="'.$this->helper->url->to('TaskViewController', 'show', array('task_id' => $event_data['task']['id'], 'project_id' => $project['id']), '', true).'">';
         $message .= '<strong>'.$event_data['task']['title']."</strong>";
-        $message .= '</a><br /><em>';
-        $message .= $title;
-        $message .= '</em>';
+        $message .= '</a><br />';
+        $message .= $body;
 
         return array(
             'text' => $message,
