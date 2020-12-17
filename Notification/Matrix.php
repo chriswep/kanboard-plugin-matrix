@@ -56,8 +56,13 @@ class Matrix extends Base implements NotificationInterface
         if($event_name === 'comment.create' && !empty($event_data['comment']['user_id'])) {
             $eventUser = $this->userModel->getById($event_data['comment']['user_id']);
             $author = $this->helper->user->getFullname($eventUser);
+            // convert linebreaks to html
             $commentBody = str_replace(array("\r\n", "\n", "\r"), '<br>', $event_data['comment']['comment']);
-            $body = '<em>'.$author. ' commented: </em>'.$commentBody;
+            // convert markdown links to html
+            $commentBody = preg_replace('/\[(.*)\]\((.*)\)/', '<a href="$2" target="_blank">$1</a>', $commentBody);
+            // test for commit references
+            if(preg_match('/(refs|closes|implements|fixes) #([0-9]*)/', $commentBody)) $body = $commentBody;
+            else $body = '<em>'.$author. ' commented: </em>'.$commentBody;
         } else {
             if ($this->userSession->isLogged()) {
                 $author = $this->helper->user->getFullname();
